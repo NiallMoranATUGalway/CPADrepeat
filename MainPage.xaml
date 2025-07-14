@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="countdown2.MainPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Countdown Letters Game">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="25" Padding="30,0" VerticalOptions="Center">
+
+            <Label x:Name="TitleLabel" 
+                   Text="Countdown Letters Game"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+
+            <Label Text="Make the longest word you can from these letters:"
+                   FontSize="16"
+                   HorizontalOptions="Center" />
+
+            <!-- Letters Display -->
+            <Frame BackgroundColor="LightBlue" Padding="20" HasShadow="True">
+                <FlexLayout x:Name="LettersContainer"
+                           Direction="Row"
+                           Wrap="Wrap"
+                           JustifyContent="Center"
+                           AlignItems="Center">
+                </FlexLayout>
+            </Frame>
+
+            <!-- Timer -->
+            <Label x:Name="TimerLabel"
+                   Text="Time: 30"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center"
+                   TextColor="Red" />
+
+            <!-- Word Input -->
+            <Entry x:Name="WordEntry"
+                   Placeholder="Enter your word here"
+                   FontSize="18"
+                   HorizontalOptions="FillAndExpand"
+                   IsEnabled="False" />
+
+            <!-- Buttons -->
+            <Button x:Name="StartButton"
+                    Text="Start New Game"
+                    Clicked="OnStartGameClicked"
+                    BackgroundColor="Green"
+                    TextColor="White" />
+
+            <Button x:Name="SubmitButton"
+                    Text="Submit Word"
+                    Clicked="OnSubmitWordClicked"
+                    BackgroundColor="Blue"
+                    TextColor="White"
+                    IsEnabled="False" />
+
+            <!-- Results -->
+            <Frame x:Name="ResultsFrame" 
+                   BackgroundColor="LightGray" 
+                   Padding="15" 
+                   IsVisible="False">
+                <StackLayout>
+                    <Label x:Name="ResultLabel"
+                           FontSize="16"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center" />
+                    <Label x:Name="ScoreLabel"
+                           FontSize="14"
+                           HorizontalOptions="Center" />
+                </StackLayout>
+            </Frame>
+
+            <!-- Previous Words -->
+            <Label Text="Your Words This Session:"
+                   FontSize="16"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+
+            <CollectionView x:Name="WordsCollectionView"
+                           ItemsSource="{Binding SubmittedWords}"
+                           HeightRequest="150">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Column="0" 
+                                   Text="{Binding Word}" 
+                                   FontSize="14" />
+                            <Label Grid.Column="1" 
+                                   Text="{Binding Score, StringFormat='({0} pts)'}" 
+                                   FontSize="12"
+                                   TextColor="Gray" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
