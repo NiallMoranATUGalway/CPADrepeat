@@ -1,25 +1,19 @@
 ﻿using Plugin.Maui.Audio;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-//using Plugin.Maui.Audio;
 
 namespace countdown2;
 
 public partial class MainPage : ContentPage, INotifyPropertyChanged
 {
-    private readonly Random _random = new();
     private readonly System.Timers.Timer _gameTimer = new();
-    private List<char> _currentLetters = new();
+    static private char[] _currentLetters = new char[9];
     private int _timeRemaining;
     private bool _gameActive;
     private readonly HashSet<string> _validWords;
+    static private int count = 0;
+    private IAudioPlayer? _currentPlayer; // Track current audio player
 
-    // Vowels and consonants for letter selection
-    private readonly char[] _vowels = { 'A', 'E', 'I', 'O', 'U' };
-    private readonly char[] _consonants = { 'B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z' };
-
-    // Simple word list for validation (in a real app, you'd use a proper dictionary)
-    
     private readonly IAudioManager audioManager;
 
     public ObservableCollection<WordScore> SubmittedWords { get; set; } = new();
@@ -75,93 +69,88 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         });
     }
 
-    private async void OnStartGameClicked(object sender, EventArgs e)
+    private void OnVowelClicked(object sender, EventArgs e)
     {
-        StartNewGame();
 
-        //starting the mp3 file when 'start game' gets clicked
-        var player = audioManager.CreatePlayer(await FileSystem.OpenAppPackageFileAsync
-            ("countdown_clock_only.mp3"));
+        count++;
 
-        player.Play();
+        if (_gameActive == false && count < 9)
+        {
+            DisplayLetter(GenerateVowel());
+        }
+        else if (_gameActive == false && count >= 9)
+        {
+            StartNewGame();
+        }
+        
     }
 
-    private void StartNewGame()
+    private void OnConsonantClicked(object sender, EventArgs e)
     {
+        count++;
+
+        if (_gameActive == false && count < 9)
+        {
+            DisplayLetter(GenerateConsonant());
+        }
+        else if (_gameActive == false && count >= 9)
+        {
+            StartNewGame();
+        }
+    }
+
+    private async void StartNewGame()
+    {
+        // Stop any currently playing audio
+        _currentPlayer?.Stop();
+
+        //starting the mp3 file when the game starts
+        _currentPlayer = audioManager.CreatePlayer(await FileSystem.OpenAppPackageFileAsync
+            ("countdown_clock_only.mp3"));
+
+        _currentPlayer.Play();
+
+
         _gameActive = true;
         _timeRemaining = 30; // 30 seconds per round
-
-        GenerateRandomLetters();
-        DisplayLetters();
 
         WordEntry.Text = "";
         WordEntry.IsEnabled = true;
         SubmitButton.IsEnabled = true;
-        StartButton.Text = "New Game";
         ResultsFrame.IsVisible = false;
 
         TimerLabel.Text = $"Time: {_timeRemaining}";
         _gameTimer.Start();
     }
 
-    private void GenerateRandomLetters()
+    private void DisplayLetter(char VowOrCon)
     {
-        _currentLetters.Clear();
+        //LettersContainer.Children.Clear();
 
-        // Generate 9 letters: mix of vowels and consonants
-        // Add 3-4 vowels
-        int vowelCount = _random.Next(3, 5);
-        for (int i = 0; i < vowelCount; i++)
+        var letterLabel = new Label
         {
-            _currentLetters.Add(_vowels[_random.Next(_vowels.Length)]);
-        }
+            Text = VowOrCon.ToString(),
+            FontSize = 24,
+            FontAttributes = FontAttributes.Bold,
+            BackgroundColor = Colors.White,
+            TextColor = Colors.Black,
+            Padding = new Thickness(15, 10),
+            Margin = new Thickness(5),
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center
+        };
 
-        // Fill the rest with consonants
-        int consonantCount = 9 - vowelCount;
-        for (int i = 0; i < consonantCount; i++)
+        var frame = new Frame
         {
-            _currentLetters.Add(_consonants[_random.Next(_consonants.Length)]);
-        }
+            Content = letterLabel,
+            BackgroundColor = Colors.White,
+            BorderColor = Colors.Gray,
+            CornerRadius = 8,
+            Padding = 0,
+            HasShadow = true
+        };
 
-        // Shuffle the letters
-        for (int i = _currentLetters.Count - 1; i > 0; i--)
-        {
-            int j = _random.Next(i + 1);
-            (_currentLetters[i], _currentLetters[j]) = (_currentLetters[j], _currentLetters[i]);
-        }
-    }
-
-    private void DisplayLetters()
-    {
-        LettersContainer.Children.Clear();
-
-        foreach (char letter in _currentLetters)
-        {
-            var letterLabel = new Label
-            {
-                Text = letter.ToString(),
-                FontSize = 24,
-                FontAttributes = FontAttributes.Bold,
-                BackgroundColor = Colors.White,
-                TextColor = Colors.Black,
-                Padding = new Thickness(15, 10),
-                Margin = new Thickness(5),
-                HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.Center
-            };
-
-            var frame = new Frame
-            {
-                Content = letterLabel,
-                BackgroundColor = Colors.White,
-                BorderColor = Colors.Gray,
-                CornerRadius = 8,
-                Padding = 0,
-                HasShadow = true
-            };
-
-            LettersContainer.Children.Add(frame);
-        }
+        LettersContainer.Children.Add(frame);
     }
 
     private void OnSubmitWordClicked(object sender, EventArgs e)
@@ -178,7 +167,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 
         if (!IsValidWord(word))
         {
-            DisplayAlert("Invalid Word", "This word cannot be made from the available letters or is not in our dictionary.", "OK");
+            DisplayAlert("Invalid Word", "This word cannot be made from the available letters.", "OK");
             return;
         }
 
@@ -194,7 +183,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 
     private bool IsValidWord(string word)
     {
-        // Check if word is in our dictionary
+        // Check if word is in the dictionary
         if (!_validWords.Contains(word))
             return false;
 
@@ -210,6 +199,191 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
 
         return true;
+    }
+
+    static char GenerateVowel()
+
+    {
+        char[] vowels = new char[67];
+
+        //first 15 filled with 'a'
+        for (int i = 0; i < 15; i++)
+        {
+            vowels[i] = 'a';
+        }
+
+        //next 21 filled with e
+        for (int i = 15; i < 37; i++)
+        {
+            vowels[i] = 'e';
+        }
+
+        //i
+        for (int i = 37; i < 50; i++)
+        {
+            vowels[i] = 'i';
+        }
+
+        //o
+        for (int i = 50; i < 63; i++)
+        {
+            vowels[i] = 'o';
+        }
+
+        //u
+        for (int i = 63; i < 67; i++)
+        {
+            vowels[i] = 'u';
+        }
+
+        //random number between 0 and 67
+        Random random = new Random();
+        int randomNumber = random.Next(0, 67);
+
+        //setting this so that we can use _currentLetters array to determine if word is valid
+        _currentLetters[count] = vowels[randomNumber];
+
+        return vowels[randomNumber];
+
+    }
+    static char GenerateConsonant()
+    {
+        char[] consonants = new char[74];
+
+        //b
+        for (int i = 0; i < 2; i++)
+        {
+            consonants[i] = 'b';
+        }
+
+        //c
+        for (int i = 2; i < 5; i++)
+        {
+            consonants[i] = 'c';
+        }
+
+        //d
+        for (int i = 5; i < 11; i++)
+        {
+            consonants[i] = 'd';
+        }
+
+        //f
+        for (int i = 11; i < 13; i++)
+        {
+            consonants[i] = 'f';
+        }
+
+        //g
+        for (int i = 13; i < 16; i++)
+        {
+            consonants[i] = 'g';
+        }
+
+        //h
+        for (int i = 16; i < 18; i++)
+        {
+            consonants[i] = 'h';
+        }
+
+        //j
+        for (int i = 18; i < 19; i++)
+        {
+            consonants[i] = 'j';
+        }
+
+        //k
+        for (int i = 19; i < 20; i++)
+        {
+            consonants[i] = 'k';
+        }
+
+        //l
+        for (int i = 20; i < 25; i++)
+        {
+            consonants[i] = 'l';
+        }
+
+        //m
+        for (int i = 25; i < 29; i++)
+        {
+            consonants[i] = 'm';
+        }
+
+        //n
+        for (int i = 29; i < 37; i++)
+        {
+            consonants[i] = 'n';
+        }
+
+        //p
+        for (int i = 37; i < 41; i++)
+        {
+            consonants[i] = 'p';
+        }
+
+        //q
+        for (int i = 41; i < 42; i++)
+        {
+            consonants[i] = 'q';
+        }
+
+        //r
+        for (int i = 42; i < 51; i++)
+        {
+            consonants[i] = 'r';
+        }
+
+        //s
+        for (int i = 51; i < 60; i++)
+        {
+            consonants[i] = 's';
+        }
+
+        //t
+        for (int i = 60; i < 69; i++)
+        {
+            consonants[i] = 't';
+        }
+
+        //v
+        for (int i = 69; i < 70; i++)
+        {
+            consonants[i] = 'v';
+        }
+
+        //w
+        for (int i = 70; i < 71; i++)
+        {
+            consonants[i] = 'w';
+        }
+
+        //x
+        for (int i = 71; i < 72; i++)
+        {
+            consonants[i] = 'x';
+        }
+
+        //y
+        for (int i = 72; i < 73; i++)
+        {
+            consonants[i] = 'y';
+        }
+
+        //z
+        for (int i = 73; i < 74; i++)
+        {
+            consonants[i] = 'z';
+        }
+
+        //random number between 0 and 74
+        Random random = new Random();
+        int randomNumber = random.Next(0, 74);
+
+        //setting this so that we can use _currentLetters array to determine if word is valid
+        _currentLetters[count] = consonants[randomNumber];
+
+        return consonants[randomNumber];
     }
 
     private int CalculateScore(string word)
@@ -239,8 +413,3 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     }
 }
 
-public class WordScore
-{
-    public string Word { get; set; } = "";
-    public int Score { get; set; }
-}

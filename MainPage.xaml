@@ -43,11 +43,25 @@
                    IsEnabled="False" />
 
             <!-- Buttons -->
-            <Button x:Name="StartButton"
-                    Text="Start New Game"
-                    Clicked="OnStartGameClicked"
-                    BackgroundColor="Green"
-                    TextColor="White" />
+            <StackLayout Orientation="Horizontal" Spacing="15" HorizontalOptions="Center">
+            <Button
+                    x:Name="vowel"
+                    Text="Vowel" 
+                    WidthRequest="100"
+                    HeightRequest="30"
+                    Clicked="OnVowelClicked"
+                    BackgroundColor="Grey"
+                    HorizontalOptions="Fill" />
+
+            <Button
+                    x:Name="consonant"
+                    Text="Consonant" 
+                    WidthRequest="100"
+                    HeightRequest="30"
+                    Clicked="OnConsonantClicked"
+                    BackgroundColor="Grey"
+                    HorizontalOptions="Fill" />
+            </StackLayout>
 
             <Button x:Name="SubmitButton"
                     Text="Submit Word"
