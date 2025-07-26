@@ -1,13 +1,14 @@
 ﻿using Plugin.Maui.Audio;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace countdown2;
 
 public partial class MainPage : ContentPage, INotifyPropertyChanged
 {
     private readonly System.Timers.Timer _gameTimer = new();
-    static private char[] _currentLetters = new char[9];
+    private List<char> _currentLetters = new();
     private int _timeRemaining;
     private bool _gameActive;
     private readonly HashSet<string> _validWords;
@@ -25,6 +26,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         SetupTimer();
         _validWords = LoadWordsFromFile();
 
+        Debug.WriteLine($"Loaded {_validWords.Count} words from dictionary.");
         this.audioManager = audioManager;
     }
 
@@ -45,6 +47,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
                 words.Add(line.Trim());
         }
 
+        
         return words;
     }
 
@@ -72,13 +75,19 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     private void OnVowelClicked(object sender, EventArgs e)
     {
 
-        count++;
+        
 
         if (_gameActive == false && count < 9)
         {
             DisplayLetter(GenerateVowel());
+            count++;
+
+            if (count == 9)
+            {
+                StartNewGame();
+            }
         }
-        else if (_gameActive == false && count >= 9)
+        else if (_gameActive == false && count == 9)
         {
             StartNewGame();
         }
@@ -87,20 +96,28 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 
     private void OnConsonantClicked(object sender, EventArgs e)
     {
-        count++;
+       
 
         if (_gameActive == false && count < 9)
         {
             DisplayLetter(GenerateConsonant());
+            count++;
+
+            if (count == 9)
+                {
+                StartNewGame();
+            }
         }
-        else if (_gameActive == false && count >= 9)
+        else if (_gameActive == false && count == 9)
         {
             StartNewGame();
+            
         }
     }
 
     private async void StartNewGame()
     {
+        //Debug.WriteLine("Current letters: " + string.Join("", _currentLetters));
         // Stop any currently playing audio
         _currentPlayer?.Stop();
 
@@ -164,12 +181,13 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
             DisplayAlert("Invalid Word", "Please enter a word.", "OK");
             return;
         }
-
+        Debug.WriteLine("word : " + string.Join("", word));
         if (!IsValidWord(word))
         {
             DisplayAlert("Invalid Word", "This word cannot be made from the available letters.", "OK");
             return;
         }
+
 
         int score = CalculateScore(word);
         SubmittedWords.Add(new WordScore { Word = word, Score = score });
@@ -183,25 +201,51 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 
     private bool IsValidWord(string word)
     {
+        bool flag = false;
+
+
+        Debug.WriteLine($"[IsValidWord] Checking word: '{word}'");
+        Debug.WriteLine($"[IsValidWord] Available letters: {string.Join("", _currentLetters)}");
         // Check if word is in the dictionary
         if (!_validWords.Contains(word))
+        {
+            Debug.WriteLine($"[IsValidWord] '{word}' NOT found in dictionary");
             return false;
 
+        }
+        else
+        {
+            Debug.WriteLine($"[IsValidWord] '{word}' found in dictionary");
+        }
+
         // Check if word can be made from available letters
-        var availableLetters = new List<char>(_currentLetters);
+        var availableLetters = new List<char>(_currentLetters.Select(c => char.ToUpper(c)));
+        //var availableLetters = new List<char>(_currentLetters); this was causing huge problems
+
+        Debug.WriteLine($"availableLetters : {string.Join(", ", availableLetters)}");
+
 
         foreach (char c in word)
         {
+            Debug.WriteLine($"[IsValidWord] Checking letter: '{c}'");
+            Debug.WriteLine($"[IsValidWord] Letters available before removal: {string.Join(", ", availableLetters)}");
+
+
+            //if there isnt a charachter used within the bounds of available letters, return false. repeat for each letter
             if (!availableLetters.Contains(c))
+            {
+                Debug.WriteLine($"[IsValidWord] Letter '{c}' not found. Returning false.");
                 return false;
+            }
 
             availableLetters.Remove(c);
+            Debug.WriteLine($"[IsValidWord] Letter '{c}' used and removed.");
         }
 
         return true;
     }
 
-    static char GenerateVowel()
+    private char GenerateVowel()
 
     {
         char[] vowels = new char[67];
@@ -240,13 +284,13 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         Random random = new Random();
         int randomNumber = random.Next(0, 67);
 
-        //setting this so that we can use _currentLetters array to determine if word is valid
-        _currentLetters[count] = vowels[randomNumber];
-
+        //assigning generated vowels/cons to a _currentLetters array to see if user selected words are within the assigned letters
+        _currentLetters.Add(vowels[randomNumber]);
+        
         return vowels[randomNumber];
 
     }
-    static char GenerateConsonant()
+    private char GenerateConsonant()
     {
         char[] consonants = new char[74];
 
@@ -380,8 +424,8 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         Random random = new Random();
         int randomNumber = random.Next(0, 74);
 
-        //setting this so that we can use _currentLetters array to determine if word is valid
-        _currentLetters[count] = consonants[randomNumber];
+        _currentLetters.Add(consonants[randomNumber]);
+
 
         return consonants[randomNumber];
     }
