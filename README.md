@@ -4,3 +4,6 @@ This is my CPAD repeat project so far. I have chosen the 'Countdown' game with j
 
 23/07/2025
 I have removed the 'start game' button and replaced it with 'vowel' and 'consonant' buttons, and added their respective distribution rates. There is lots of bugs in this version and no repeat method but this will be amended in the future
+
+26/07/2025
+I had to do a big amount of debugging this evening as for some reason the IsValidWord() method kept returning false, despite inputted words from the user being valid. There was a case miss-match that occured when I declared var available letters. The available letters were in lower case while the dictionary text file was all in upper case.
