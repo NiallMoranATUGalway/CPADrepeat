@@ -13,9 +13,29 @@
                    FontAttributes="Bold"
                    HorizontalOptions="Center" />
 
-            <Label Text="Make the longest word you can from these letters:"
-                   FontSize="16"
-                   HorizontalOptions="Center" />
+            <Label x:Name="PlayerTurnLabel"
+                   Text="Player 1's turn "
+                   FontSize="20"
+                   HorizontalOptions="Center"
+                   TextColor="Teal"
+                   FontAttributes="Bold" />
+
+            <Label x:Name="playersHighScore"
+                   Text="Player 1's highest score : "
+                   FontSize= "20"
+                   HorizontalOptions="Center"
+                   TextColor= "grey"
+                   FontAttributes="Bold" />
+
+            <Label x:Name="playerXWins"
+                   Text="Player 1 Wins!"
+                   FontSize="20"
+                   HorizontalOptions="Center"
+                   TextColor="Navy"
+                   FontAttributes="Bold"
+                   />
+
+
 
             <!-- Letters Display -->
             <Frame BackgroundColor="LightBlue" Padding="20" HasShadow="True">
@@ -26,6 +46,30 @@
                            AlignItems="Center">
                 </FlexLayout>
             </Frame>
+
+            <!-- consonant/vowel buttons -->
+            <StackLayout Orientation="Horizontal" Spacing="15" HorizontalOptions="Center">
+                
+            <Button
+            x:Name="vowel"
+            Text="Vowel" 
+            WidthRequest="100"
+            HeightRequest="30"
+            Clicked="OnVowelClicked"
+            BackgroundColor="Grey"
+            HorizontalOptions="Fill" />
+
+            <Button
+            x:Name="consonant"
+            Text="Consonant" 
+            WidthRequest="100"
+            HeightRequest="30"
+            Clicked="OnConsonantClicked"
+            BackgroundColor="Grey"
+            HorizontalOptions="Fill" />
+                
+            </StackLayout>
+
 
             <!-- Timer -->
             <Label x:Name="TimerLabel"
@@ -42,33 +86,21 @@
                    HorizontalOptions="FillAndExpand"
                    IsEnabled="False" />
 
-            <!-- Buttons -->
-            <StackLayout Orientation="Horizontal" Spacing="15" HorizontalOptions="Center">
-            <Button
-                    x:Name="vowel"
-                    Text="Vowel" 
-                    WidthRequest="100"
-                    HeightRequest="30"
-                    Clicked="OnVowelClicked"
-                    BackgroundColor="Grey"
-                    HorizontalOptions="Fill" />
-
-            <Button
-                    x:Name="consonant"
-                    Text="Consonant" 
-                    WidthRequest="100"
-                    HeightRequest="30"
-                    Clicked="OnConsonantClicked"
-                    BackgroundColor="Grey"
-                    HorizontalOptions="Fill" />
-            </StackLayout>
-
+            <!-- submit/ new game buttons -->
+            
             <Button x:Name="SubmitButton"
                     Text="Submit Word"
                     Clicked="OnSubmitWordClicked"
                     BackgroundColor="Blue"
                     TextColor="White"
                     IsEnabled="False" />
+
+            <Button x:Name="NewGameButton" 
+            Text="New Game" 
+            Clicked="OnNewGameClicked"
+            IsVisible="False"
+            HorizontalOptions="Center"
+            Margin="0,10"/>
 
             <!-- Results -->
             <Frame x:Name="ResultsFrame" 

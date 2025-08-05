@@ -2,6 +2,8 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace countdown2;
 
@@ -13,7 +15,12 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     private bool _gameActive;
     private readonly HashSet<string> _validWords;
     static private int count = 0;
+    //static int[] players = new int[2];
     private IAudioPlayer? _currentPlayer; // Track current audio player
+    Random random = new Random();
+    static private int gameCount = 1;
+    private bool player1 = true;
+    private int[] highestScorePlayer = new int[2];
 
     private readonly IAudioManager audioManager;
 
@@ -26,8 +33,13 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         SetupTimer();
         _validWords = LoadWordsFromFile();
 
+        playerXWins.IsVisible = false;
+
         Debug.WriteLine($"Loaded {_validWords.Count} words from dictionary.");
         this.audioManager = audioManager;
+
+        PlayerTurnLabel.Text = $"Player 1's Turn";
+       
     }
 
     private HashSet<string> LoadWordsFromFile()
@@ -75,8 +87,6 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     private void OnVowelClicked(object sender, EventArgs e)
     {
 
-        
-
         if (_gameActive == false && count < 9)
         {
             DisplayLetter(GenerateVowel());
@@ -87,17 +97,11 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
                 StartNewGame();
             }
         }
-        else if (_gameActive == false && count == 9)
-        {
-            StartNewGame();
-        }
-        
     }
 
     private void OnConsonantClicked(object sender, EventArgs e)
     {
        
-
         if (_gameActive == false && count < 9)
         {
             DisplayLetter(GenerateConsonant());
@@ -107,11 +111,6 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
                 {
                 StartNewGame();
             }
-        }
-        else if (_gameActive == false && count == 9)
-        {
-            StartNewGame();
-            
         }
     }
 
@@ -197,6 +196,23 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         ResultsFrame.IsVisible = true;
 
         WordEntry.Text = "";
+
+        if (player1 == true)
+        {
+            if (score > highestScorePlayer[0])
+            {
+                highestScorePlayer[0] = score;
+                playersHighScore.Text = "Player 1's highest score : " + highestScorePlayer[0];
+            }
+        }
+        else
+        {
+            if (score > highestScorePlayer[1])
+            {
+                highestScorePlayer[1] = score;
+                playersHighScore.Text = "Player 2's highest score : " + highestScorePlayer[1];
+            }
+        }
     }
 
     private bool IsValidWord(string word)
@@ -281,7 +297,6 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
 
         //random number between 0 and 67
-        Random random = new Random();
         int randomNumber = random.Next(0, 67);
 
         //assigning generated vowels/cons to a _currentLetters array to see if user selected words are within the assigned letters
@@ -421,7 +436,6 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         }
 
         //random number between 0 and 74
-        Random random = new Random();
         int randomNumber = random.Next(0, 74);
 
         _currentLetters.Add(consonants[randomNumber]);
@@ -440,6 +454,9 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 
     private void EndGame()
     {
+        
+        
+        
         _gameActive = false;
         _gameTimer.Stop();
 
@@ -454,6 +471,84 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
             ScoreLabel.Text = "";
             ResultsFrame.IsVisible = true;
         }
+
+        NewGameButton.IsVisible = true;
+
+        if (gameCount % 2 != 0)
+        {
+            NewGameButton.Text = "Next Round";
+            NewGameButton.BackgroundColor = Colors.Teal;
+        }
+        else
+        {
+            NewGameButton.Text = "New Game";
+        }
+
+        Debug.WriteLine("highest score player 1 :" + highestScorePlayer[0]);
+        Debug.WriteLine("highest score player 2 :" + highestScorePlayer[1]);
+        if (gameCount % 2 == 0)
+        {
+            if (highestScorePlayer[0] > highestScorePlayer[1])
+            {
+                playerXWins.Text = "Player 1 Wins!";
+            }
+            else if (highestScorePlayer[0] == highestScorePlayer[1])
+            {
+                playerXWins.Text = "It is a Draw!";
+            }
+            else
+            {
+                playerXWins.Text = "Player 2 Wins!";
+            }
+            playerXWins.IsVisible = true;
+        }
+    }
+
+    private void OnNewGameClicked(object sender, EventArgs e)
+    {
+
+        Debug.WriteLine("Game Count : " + gameCount);
+        //initalizing highest scores after 2 games
+        if (gameCount % 2 == 0)
+        {
+            highestScorePlayer[0] = 0;
+            highestScorePlayer[1] = 0;
+        }
+
+        gameCount++;
+
+        // Reset state
+        _currentLetters.Clear();
+        count = 0;
+        LettersContainer.Children.Clear();
+        SubmittedWords.Clear();
+
+        playerXWins.IsVisible = false;
+        WordEntry.Text = "";
+        WordEntry.IsEnabled = false;
+        SubmitButton.IsEnabled = false;
+
+        TimerLabel.Text = "Time: 0";
+        ResultsFrame.IsVisible = false;
+        NewGameButton.IsVisible = false;
+
+
+        _gameActive = false;
+
+        //changing players
+        if (player1 == true)
+        {
+            player1 = false;
+            PlayerTurnLabel.Text = $"Player 2's Turn";
+        }
+        else
+        {
+            player1 = true;
+            PlayerTurnLabel.Text = $"Player 1's Turn";
+        }
+
+
+        // Allow user to start picking letters again
     }
 }
 
