@@ -7,3 +7,6 @@ I have removed the 'start game' button and replaced it with 'vowel' and 'consona
 
 26/07/2025
 I had to do a big amount of debugging this evening as for some reason the IsValidWord() method kept returning false, despite inputted words from the user being valid. There was a case miss-match that occured when I declared var available letters. The available letters were in lower case while the dictionary text file was all in upper case.
+
+05/08/2025
+I added player 1/2 functionality
