@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
+using SkiaSharp.Extended.UI.Controls;
 
 namespace countdown2;
 
@@ -126,6 +127,12 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 
         _currentPlayer.Play();
 
+
+        // Reset animation to start
+        CountdownAnimation.IsVisible = true;
+        CountdownAnimation.Progress = TimeSpan.Zero;
+
+        //CountdownAnimation.Play();
 
         _gameActive = true;
         _timeRemaining = 30; // 30 seconds per round
@@ -454,11 +461,11 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 
     private void EndGame()
     {
-        
-        
-        
         _gameActive = false;
         _gameTimer.Stop();
+
+        //hide animation
+        CountdownAnimation.IsVisible = false;   
 
         WordEntry.IsEnabled = false;
         SubmitButton.IsEnabled = false;
@@ -513,6 +520,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
         {
             highestScorePlayer[0] = 0;
             highestScorePlayer[1] = 0;
+            playersHighScore.Text = "Player 1's Highest Score : 0";
         }
 
         gameCount++;
