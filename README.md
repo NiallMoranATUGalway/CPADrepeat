@@ -11,4 +11,4 @@ I had to do a big amount of debugging this evening as for some reason the IsVali
 05/08/2025
 I added player 1/2 functionality
 
-09/08/2025 Using the skia.extended.tools.ui plugin in, I used a 'lottie' animation of a circular block that is 30 seconds long that ticks down. The lottie animation was on the website https://lottiefiles.com/ initially in purple, but I was able to use the built in editor on the website to change the purple to teal, which suits the theme of my project better. This video https://www.youtube.com/watch?v=o5X5yXdWpuc&t=486s showed me how to implement the animation
+09/08/2025 Using the skia.extended.tools.ui plugin in, I used a 'lottie' animation of a circular block that is 30 seconds long that ticks down. The lottie animation was on the website https://lottiefiles.com/ initially in purple, but I was able to use the built in editor on the website to change the purple to teal, which suits the theme of my project better. This video https://www.youtube.com/watch?v=o5X5yXdWpuc showed me how to implement the animation
