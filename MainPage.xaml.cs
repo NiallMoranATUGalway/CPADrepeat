@@ -16,7 +16,6 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
     private bool _gameActive;
     private readonly HashSet<string> _validWords;
     static private int count = 0;
-    //static int[] players = new int[2];
     private IAudioPlayer? _currentPlayer; // Track current audio player
     Random random = new Random();
     static private int gameCount = 1;
@@ -76,7 +75,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            TimerLabel.Text = $"Time: {_timeRemaining}";
+             TimerLabel.Text = $"Time: {_timeRemaining}";
 
             if (_timeRemaining <= 0)
             {
@@ -461,6 +460,8 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 
     private void EndGame()
     {
+        String gameResult = "null";
+
         _gameActive = false;
         _gameTimer.Stop();
 
@@ -498,15 +499,21 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
             if (highestScorePlayer[0] > highestScorePlayer[1])
             {
                 playerXWins.Text = "Player 1 Wins!";
+                gameResult = "P1";
+                
             }
             else if (highestScorePlayer[0] == highestScorePlayer[1])
             {
                 playerXWins.Text = "It is a Draw!";
+                gameResult = "Draw";
             }
             else
             {
                 playerXWins.Text = "Player 2 Wins!";
+                gameResult = "P2";
             }
+
+            SaveToAppData(gameResult);
             playerXWins.IsVisible = true;
         }
     }
@@ -557,6 +564,39 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 
 
         // Allow user to start picking letters again
+    }
+
+    static void SaveToAppData(String gameResult)
+    {
+        string filePath = Path.Combine(FileSystem.AppDataDirectory, "game_history.txt");
+
+        //getting rid of previous game histories 
+        if (gameCount == 2 ) //(1st game)
+        {
+            initalizeFile(filePath);
+        }
+        
+        try
+        {
+            using (StreamWriter sw = new StreamWriter(filePath, true)) //append
+            {
+                sw.WriteLine($"Result Game {gameCount / 2} : {gameResult}");
+            }
+
+            Debug.WriteLine($"game_history.txt ammended, location : " + FileSystem.AppDataDirectory);
+        }
+        catch (Exception a)
+        {
+            Debug.WriteLine($"Error {a.Message}");
+        }
+    }
+    static void initalizeFile(string filePath)
+    {
+        //overwrite with day/time
+        using (StreamWriter sw = new StreamWriter(filePath, false))
+        {
+            sw.WriteLine($"=== New Run Started at {DateTime.Now:dd-MM-yyyy HH:mm:ss} ===");
+        }
     }
 }
 
